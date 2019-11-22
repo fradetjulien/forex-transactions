@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+module/Pipfile.lock
+
 # Distribution / packaging
 .Python
 build/
