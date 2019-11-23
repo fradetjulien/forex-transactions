@@ -5,7 +5,17 @@ class CurrencyPairs:
     '''
     Common base class for all orders
     '''
-    def __init__(self):
+    def __init__(self, dominant, quote):
+        self.dominant = dominant
+        self.quote = quote
+
+    def __eq__(self, other):
+        return ((self.dominant, self.quote) == (other.dominant, other.quote))
+
+    def __str__(self):
+        return 'Here will be displayed all result orders.'
+
+    def __del__(self):
         return
 
 def is_csv(file):
@@ -37,8 +47,9 @@ def trade_currencies(file):
     Execute trade orders when prices match or reject them
     '''
     if is_csv(file):
-        matches = CurrencyPairs()
+        matches = CurrencyPairs('USD', 'EUR')
         return matches
+    return None
 
 if  __name__ == '__main__':
     cli()
