@@ -8,7 +8,9 @@ __pycache__/
 
 .DS_Store
 assets/.DS_Store
+module/.DS_Store
 module/Pipfile.lock
+assets/orders.csv
 
 # Distribution / packaging
 .Python
