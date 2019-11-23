@@ -1,18 +1,12 @@
-import click
 import csv
+import click
 
-def init_data():
+class CurrencyPairs:
     '''
+    Common base class for all orders
     '''
-    data = {
-    }
-    return data
-
-def read_data(file):
-    '''
-    '''
-    data = init_data()
-    return data
+    def __init__(self):
+        return
 
 def is_csv(file):
     '''
@@ -33,18 +27,18 @@ def is_csv(file):
 @click.group()
 def cli():
     '''
-
+    Python Script which match buy and sell orders of individual currency pairs
     '''
 
 @cli.command('trade')
 @click.argument('file', type=click.Path(exists=True))
 def trade_currencies(file):
     '''
-    Execute trade orders when it's possible and reject it when it's impossible
+    Execute trade orders when prices match or reject them
     '''
     if is_csv(file):
-        data = read_data(file)
-        return data
+        matches = CurrencyPairs()
+        return matches
 
 if  __name__ == '__main__':
     cli()

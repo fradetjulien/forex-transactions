@@ -1,0 +1,6 @@
+id,account,pair,action,price
+0, BOB, EUR/USD, BUY, 1.10
+1, KIM, CAD/USD, BUY, 1.10
+2, CHARLES, EUR/USD, BUY, 1.20
+3, TINA, EUR/USD, SELL, 1.05
+4, TINA, EUR/USD, BUY, 1.10
