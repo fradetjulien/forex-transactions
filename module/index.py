@@ -28,13 +28,13 @@ class TransactionOrder:
         self.price = float(price)
 
     def __eq__(self, other):
-        return (self.id, self.account) == (other.dominant, other.quote)
+        return (self.pair == other.pair)
 
     def __str__(self):
         return "{} - {} - {} - {} - {}".format(self.id, self.account, self.pair, self.action, self.price)
 
     def __del__(self):
-        return
+        del self
 
 def is_currency_code(currency_codes):
     '''
@@ -100,9 +100,24 @@ def clean_row(row):
         del row
     return new_row
 
+def match_orders(orders):
+    '''
+    Match or Reject orders
+    '''
+    matches = []
+    index = 0
+    position = 0
+    while index < len(orders) - 1:
+        if orders[index + 1] and orders[position].__eq__(orders[index + 1]):
+            print("TRUE")
+        else:
+            print("WRONG")
+        index = index + 1
+    return matches
+
 def store_orders(file):
     '''
-    Store order of each account in a Class instance
+    Store order of each account in a list of Class instances
     '''
     orders = []
     with open(file, newline='') as csvfile:
@@ -143,9 +158,8 @@ def trade_currencies(file):
     '''
     if is_csv(file):
         orders = store_orders(file)
-        for item in orders:
-            print(item)
-    return orders
+        matches = match_orders(orders)
+    return matches
 
 if  __name__ == '__main__':
     cli()
