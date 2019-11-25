@@ -16,19 +16,22 @@ class FileError(Exception):
     def __str__(self):
         return self.message
 
-class CurrencyPairs:
+class TransactionOrder:
     '''
-    Common base class for all orders
+    Common base class for all transaction orders
     '''
-    def __init__(self, dominant, quote):
-        self.dominant = dominant
-        self.quote = quote
+    def __init__(self, id, account, pair, action, price):
+        self.id = int(id)
+        self.account = account
+        self.pair = pair
+        self.action = action
+        self.price = float(price)
 
     def __eq__(self, other):
-        return (self.dominant, self.quote) == (other.dominant, other.quote)
+        return (self.id, self.account) == (other.dominant, other.quote)
 
     def __str__(self):
-        return 'Here will be displayed all result orders.'
+        return "{} - {} - {} - {} - {}".format(self.id, self.account, self.pair, self.action, self.price)
 
     def __del__(self):
         return
@@ -65,6 +68,20 @@ def find_currency_pair(currency_pair):
         return False
     return is_currency_code(currency_codes)
 
+def is_not_categories(row):
+    '''
+    Check if the row is not the initial row composed of categories
+    '''
+    try:
+        for item in row:
+            if item == 'id':
+                return False
+            else:
+                continue
+    except:
+        print("Unable to parse row inside the csv file.")
+    return True
+
 def clean_row(row):
     '''
     Clean each row of any whitespace
@@ -82,6 +99,19 @@ def clean_row(row):
     finally:
         del row
     return new_row
+
+def store_orders(file):
+    '''
+    Store order of each account in a Class instance
+    '''
+    orders = []
+    with open(file, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
+        for row in reader:
+            row = clean_row(row)
+            if is_not_categories(row):
+                orders.append(TransactionOrder(row[0], row[1], row[2], row[3], row[4]))
+    return orders
 
 def is_csv(file):
     '''
@@ -112,9 +142,10 @@ def trade_currencies(file):
     Execute trade orders when prices match or reject them
     '''
     if is_csv(file):
-        matches = CurrencyPairs('USD', 'EUR')
-        return matches
-    return None
+        orders = store_orders(file)
+        for item in orders:
+            print(item)
+    return orders
 
 if  __name__ == '__main__':
     cli()
