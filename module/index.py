@@ -20,18 +20,21 @@ class TransactionOrder:
     '''
     Common base class for all transaction orders
     '''
-    def __init__(self, id, account, pair, action, price):
-        self.id = int(id)
-        self.account = account
-        self.pair = pair
-        self.action = action
-        self.price = float(price)
+    def __init__(self, data):
+        self.id = int(data[0])
+        self.account = data[1]
+        self.pair = data[2]
+        self.action = data[3]
+        self.price = float(data[4])
 
     def __eq__(self, other):
-        return (self.pair == other.pair)
+        if self.pair == other.pair and self.action != other.action:
+            return True
+        return False
 
     def __str__(self):
-        return "{} - {} - {} - {} - {}".format(self.id, self.account, self.pair, self.action, self.price)
+        return "{} - {} - {} - {} - {}".format(self.id, self.account,\
+                                               self.pair, self.action, self.price)
 
     def __del__(self):
         del self
@@ -73,12 +76,11 @@ def is_not_categories(row):
     Check if the row is not the initial row composed of categories
     '''
     try:
+        categories = ["id", "account", "pair", "action", "price"]
         for item in row:
-            if item == 'id':
+            if item in categories:
                 return False
-            else:
-                continue
-    except:
+    except IndexError:
         print("Unable to parse row inside the csv file.")
     return True
 
@@ -108,7 +110,7 @@ def match_orders(orders):
     index = 0
     position = 0
     while index < len(orders) - 1:
-        if orders[index + 1] and orders[position].__eq__(orders[index + 1]):
+        if orders[position].__eq__(orders[index + 1]):
             print("TRUE")
         else:
             print("WRONG")
@@ -125,7 +127,7 @@ def store_orders(file):
         for row in reader:
             row = clean_row(row)
             if is_not_categories(row):
-                orders.append(TransactionOrder(row[0], row[1], row[2], row[3], row[4]))
+                orders.append(TransactionOrder(row))
     return orders
 
 def is_csv(file):
