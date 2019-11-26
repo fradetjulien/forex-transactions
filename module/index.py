@@ -21,27 +21,26 @@ class TransactionOrder:
     Common base class for all transaction orders
     '''
     def __init__(self, data):
-        self.id = int(data[0])
-        self.account = data[1]
-        self.pair = data[2]
-        self.action = data[3]
-        self.price = float(data[4])
+        self.order = {}
+        self.order["id"] = int(data[0])
+        self.order["account"] = data[1]
+        self.order["pair"] = data[2]
+        self.order["action"] = data[3]
+        self.order["price"] = float(data[4])
 
     def __eq__(self, other):
-        if self.pair == other.pair and self.action != other.action:
-            self.match = other.id
-            other.match = self.id
+        if self.order["pair"] == other.order["pair"] and\
+            self.order["action"] != other.order["action"]:
+            self.order["match"] = other.order["id"]
+            other.order["match"] = self.order["id"]
             return True
-        else:
-            other.match = 'REJECTED'
+        other.order["match"] = 'REJECTED'
         return False
 
     def __str__(self):
-        return "{} - {} - {} - {} - {} - {}".format(self.id, self.account, self.pair,\
-                                               self.action, self.price, self.match)
-
-    def __del__(self):
-        del self
+        return "{} - {} - {} - {} - {} - {}".format(self.order["id"], self.order["account"],\
+                                                    self.order["pair"], self.order["action"],\
+                                                    self.order["price"], self.order["match"])
 
 def is_currency_code(currency_codes):
     '''
@@ -106,6 +105,17 @@ def clean_row(row):
         del row
     return new_row
 
+def create_csv(matches):
+    '''
+    Create a new CSV file containing orders status
+    '''
+    with open('matches.csv', 'w') as csvfile:
+        categories = ["id", "account", "pair", "action", "price", "match"]
+        writer = csv.DictWriter(csvfile, fieldnames=categories)
+        writer.writeheader()
+        for item in matches:
+            writer.writerow(item.order)
+
 def match_orders(orders):
     '''
     Match or Reject orders
@@ -161,7 +171,8 @@ def trade_currencies(file):
     if is_csv(file):
         orders = store_orders(file)
         matches = match_orders(orders)
-    return matches
+        create_csv(matches)
+        del matches
 
 if  __name__ == '__main__':
     cli()
