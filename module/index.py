@@ -29,12 +29,16 @@ class TransactionOrder:
 
     def __eq__(self, other):
         if self.pair == other.pair and self.action != other.action:
+            self.match = other.id
+            other.match = self.id
             return True
+        else:
+            other.match = 'REJECTED'
         return False
 
     def __str__(self):
-        return "{} - {} - {} - {} - {}".format(self.id, self.account,\
-                                               self.pair, self.action, self.price)
+        return "{} - {} - {} - {} - {} - {}".format(self.id, self.account, self.pair,\
+                                               self.action, self.price, self.match)
 
     def __del__(self):
         del self
@@ -106,16 +110,12 @@ def match_orders(orders):
     '''
     Match or Reject orders
     '''
-    matches = []
     index = 0
     position = 0
     while index < len(orders) - 1:
-        if orders[position].__eq__(orders[index + 1]):
-            print("TRUE")
-        else:
-            print("WRONG")
+        orders[position].__eq__(orders[index + 1])
         index = index + 1
-    return matches
+    return orders
 
 def store_orders(file):
     '''
