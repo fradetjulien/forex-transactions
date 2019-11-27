@@ -42,69 +42,6 @@ class TransactionOrder:
                                                     self.order["pair"], self.order["action"],\
                                                     self.order["price"], self.order["match"])
 
-def is_currency_code(currency_codes):
-    '''
-    Recover the official list of currency code and then check if the currency codes are correct
-    '''
-    currency_code_list = []
-    for item in list(pycountry.currencies):
-        currency_code_list.append(str(item).split(',')[0][-4:-1])
-    try:
-        for currency_code in currency_codes:
-            if currency_code not in currency_code_list:
-                raise FileError("Insert correct currency codes inside your csv file please.")
-    except FileError as error:
-        print(error)
-        return False
-    return True
-
-def find_currency_pair(currency_pair):
-    '''
-    Find the currency pair, split it into a list of currency codes and then passed it as parameter
-    '''
-    if currency_pair == 'pair':
-        return True
-    try:
-        slash = currency_pair.find('/')
-        if slash == -1:
-            raise FileError("Insert correct currency pairs inside your csv file please.")
-        currency_codes = currency_pair.split('/')
-    except FileError as error:
-        print(error)
-        return False
-    return is_currency_code(currency_codes)
-
-def is_not_categories(row):
-    '''
-    Check if the row is not the initial row composed of categories
-    '''
-    try:
-        categories = ["id", "account", "pair", "action", "price"]
-        for item in row:
-            if item in categories:
-                return False
-    except IndexError:
-        print("Unable to parse row inside the csv file.")
-    return True
-
-def clean_row(row):
-    '''
-    Clean each row of any whitespace
-    '''
-    new_row = []
-    try:
-        for item in row:
-            item = item.strip()
-            if len(item) == 0:
-                raise FileError("One currency pair is empty inside your csv.")
-            new_row.append(item)
-    except FileError as error:
-        print(error)
-        return False
-    finally:
-        del row
-    return new_row
-
 def create_csv(matches):
     '''
     Create a new CSV file containing orders status
@@ -127,6 +64,19 @@ def match_orders(orders):
         index = index + 1
     return orders
 
+def is_not_categories(row):
+    '''
+    Check if the row is not the initial row composed of categories
+    '''
+    try:
+        categories = ["id", "account", "pair", "action", "price"]
+        for item in row:
+            if item in categories:
+                return False
+    except IndexError:
+        print("Unable to parse row inside the csv file.")
+    return True
+
 def store_orders(file):
     '''
     Store order of each account in a list of Class instances
@@ -139,6 +89,58 @@ def store_orders(file):
             if is_not_categories(row):
                 orders.append(TransactionOrder(row))
     return orders
+
+def is_currency_code(currency_codes):
+    '''
+    Recover the official list of currency code and then check if the currency codes are correct
+    '''
+    currency_code_list = []
+    for item in list(pycountry.currencies):
+        currency_code_list.append(str(item).split(',')[0][-4:-1])
+    try:
+        for currency_code in currency_codes:
+            if currency_code not in currency_code_list:
+                raise FileError("Insert correct currency codes inside your csv file please.")
+    except FileError as error:
+        print(error)
+        return False
+    except IndexError:
+        return False
+    return True
+
+def find_currency_pair(currency_pair):
+    '''
+    Find the currency pair, split it into a list of currency codes and then passed it as parameter
+    '''
+    if currency_pair == 'pair':
+        return True
+    try:
+        slash = currency_pair.find('/')
+        if slash == -1:
+            raise FileError("Insert correct currency pairs inside your csv file please.")
+        currency_codes = currency_pair.split('/')
+    except FileError as error:
+        print(error)
+        return False
+    return is_currency_code(currency_codes)
+
+def clean_row(row):
+    '''
+    Clean each row of any whitespace
+    '''
+    new_row = []
+    try:
+        for item in row:
+            item = item.strip()
+            if len(item) == 0:
+                raise FileError("One currency pair is empty inside your csv.")
+            new_row.append(item)
+    except FileError as error:
+        print(error)
+        return False
+    finally:
+        del row
+    return new_row
 
 def is_csv(file):
     '''
