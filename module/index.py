@@ -27,15 +27,65 @@ class TransactionOrder:
         self.order["pair"] = data[2]
         self.order["action"] = data[3]
         self.order["price"] = float(data[4])
+        self.order["match"] = False
+
+    def are_prices_compatible(self, other):
+        '''
+        Check if the prices set are compatible
+        '''
+        return True
+
+    def is_different_accounts(self, other):
+        '''
+        Check if transaction actors are a different person
+        '''
+        if self.order["account"] != other.order["account"]:
+            return True
+        return False
+
+    def is_already_matched(self):
+        '''
+        Check if the order has already found a match
+        '''
+        if (isinstance(self.order["match"], bool) or\
+            self.order["match"] == 'REJECTED'):
+            return False
+        return True
+
+    def is_order(self):
+        '''
+        Check if the order is known
+        '''
+        if self.order["action"] == "BUY" or\
+           self.order["action"] == "SELL":
+            return True
+        return False
+
+    def can_trade(self, other):
+        '''
+        Check if all conditions are respected for the trade
+        '''
+        if self.is_order() and other.is_order() and\
+           self.order["action"] != other.order["action"] and\
+           not self.is_already_matched() and not other.is_already_matched():
+            return True
+        return False
+
+    def is_same_currency_pairs(self, other):
+        '''
+        Check if they want to trade the exact same currency pairs
+        '''
+        if self.order["pair"] == other.order["pair"]:
+            return True
+        return False
 
     def __eq__(self, other):
-        if self.order["pair"] == other.order["pair"] and\
-            self.order["action"] != other.order["action"]:
+        if self.is_same_currency_pairs(other) and\
+           self.can_trade(other) and\
+           self.is_different_accounts(other) and\
+           self.are_prices_compatible(other):
             self.order["match"] = other.order["id"]
             other.order["match"] = self.order["id"]
-            return True
-        other.order["match"] = 'REJECTED'
-        return False
 
     def __str__(self):
         return "{} - {} - {} - {} - {} - {}".format(self.order["id"], self.order["account"],\
@@ -57,11 +107,16 @@ def match_orders(orders):
     '''
     Match or Reject orders
     '''
-    index = 0
     position = 0
-    while index < len(orders) - 1:
-        orders[position].__eq__(orders[index + 1])
-        index = index + 1
+    while position < len(orders):
+        index = -1
+        while index < len(orders) - 1:
+            orders[position].__eq__(orders[index + 1])
+            index = index + 1
+        if isinstance(orders[position].order["match"], bool) and\
+           not orders[position].order["match"]:
+            orders[position].order["match"] = 'REJECTED'
+        position = position + 1
     return orders
 
 def is_not_categories(row):
