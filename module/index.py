@@ -96,7 +96,7 @@ def create_csv(matches):
     '''
     Create a new CSV file containing orders status
     '''
-    with open('matches.csv', 'w') as csvfile:
+    with open('matches.csv', mode='w') as csvfile:
         categories = ["id", "account", "pair", "action", "price", "match"]
         writer = csv.DictWriter(csvfile, fieldnames=categories)
         writer.writeheader()
@@ -204,13 +204,17 @@ def is_csv(file):
     if not file.endswith('.csv') or os.path.getsize(file) <= 0:
         print("Insert a correct CSV file please.")
         return False
-    with open(file, newline='') as csvfile:
+    with open(file, mode='r', newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
-        for row in reader:
-            row = clean_row(row)
-            if not row or not find_currency_pair(row[2]):
-                return False
-        del reader
+        try:
+            for row in reader:
+                row = clean_row(row)
+                if not row or not find_currency_pair(row[2]):
+                    return False
+        except csv.Error:
+            return False
+        finally:
+            del reader
     return True
 
 @click.group()
