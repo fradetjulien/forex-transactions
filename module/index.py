@@ -99,9 +99,14 @@ def create_csv(matches):
     with open('matches.csv', mode='w') as csvfile:
         categories = ["id", "account", "pair", "action", "price", "match"]
         writer = csv.DictWriter(csvfile, fieldnames=categories)
-        writer.writeheader()
-        for item in matches:
-            writer.writerow(item.order)
+        try:
+            writer.writeheader()
+            for item in matches:
+                writer.writerow(item.order)
+        except csv.Error:
+            print("Unable to write data inside the CSV file.")
+        finally:
+            del writer
 
 def match_orders(orders):
     '''
@@ -139,10 +144,16 @@ def store_orders(file):
     orders = []
     with open(file, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
-        for row in reader:
-            row = clean_row(row)
-            if is_not_categories(row):
-                orders.append(TransactionOrder(row))
+        try:
+            for row in reader:
+                row = clean_row(row)
+                if is_not_categories(row):
+                    orders.append(TransactionOrder(row))
+        except csv.Error:
+            print("Unable to get orders stored inside the CSV file.")
+            return None
+        finally:
+            del reader
     return orders
 
 def is_currency_code(currency_codes):
