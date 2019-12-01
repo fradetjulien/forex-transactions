@@ -29,61 +29,66 @@ class TransactionOrder:
         self.order["price"] = float(data[4])
         self.order["match"] = False
 
+    @staticmethod
+    def are_already_matched(match, other_match):
+        '''
+        Check if one of the orders has already found a match
+        '''
+        if (isinstance(match, bool) or match == 'REJECTED') and\
+           (isinstance(other_match, bool) or other_match == 'REJECTED'):
+            return False
+        return True
+
+    @staticmethod
+    def are_compatible_orders(action, other_action):
+        '''
+        Check if the order is known
+        '''
+        if action and other_action in ('BUY', 'SELL') and\
+           action != other_action:
+            return True
+        return False
+
+    @staticmethod
+    def are_different_accounts(account_1, account_2):
+        '''
+        Check if transaction actors are a different person
+        '''
+        if account_1 != account_2:
+            return True
+        return False
+
+    @staticmethod
+    def are_same_currency_pairs(currency_pair_1, currency_pair_2):
+        '''
+        Check if they want to trade the exact same currency pairs
+        '''
+        if currency_pair_1 == currency_pair_2:
+            return True
+        return False
+
     def are_prices_compatible(self, other):
         '''
         Check if the prices set are compatible
         '''
-        return True
-
-    def is_different_accounts(self, other):
-        '''
-        Check if transaction actors are a different person
-        '''
-        if self.order["account"] != other.order["account"]:
+        if self.order["action"] in 'BUY' and\
+           self.order["price"] >= other.order["price"]:
+           return True
+        elif other.order["action"] in 'BUY' and\
+             other.order["price"] >= self.order["price"]:
             return True
-        return False
-
-    def is_already_matched(self):
-        '''
-        Check if the order has already found a match
-        '''
-        if (isinstance(self.order["match"], bool) or\
-            self.order["match"] == 'REJECTED'):
+        else:
             return False
-        return True
-
-    def is_order(self):
-        '''
-        Check if the order is known
-        '''
-        if self.order["action"] == "BUY" or\
-           self.order["action"] == "SELL":
-            return True
-        return False
-
-    def can_trade(self, other):
-        '''
-        Check if all conditions are respected for the trade
-        '''
-        if self.is_order() and other.is_order() and\
-           self.order["action"] != other.order["action"] and\
-           not self.is_already_matched() and not other.is_already_matched():
-            return True
-        return False
-
-    def is_same_currency_pairs(self, other):
-        '''
-        Check if they want to trade the exact same currency pairs
-        '''
-        if self.order["pair"] == other.order["pair"]:
-            return True
-        return False
 
     def __eq__(self, other):
-        if self.is_same_currency_pairs(other) and\
-           self.can_trade(other) and\
-           self.is_different_accounts(other) and\
-           self.are_prices_compatible(other):
+        '''
+        If all conditions are respected for the trade, execute it
+        '''
+        if self.are_same_currency_pairs(self.order["pair"], other.order["pair"]) and\
+           self.are_different_accounts(self.order["account"], other.order["account"]) and\
+           self.are_prices_compatible(other) and\
+           self.are_compatible_orders(self.order["action"], other.order["action"]) and\
+           not self.are_already_matched(self.order["match"], other.order["match"]):
             self.order["match"] = other.order["id"]
             other.order["match"] = self.order["id"]
 
@@ -103,8 +108,8 @@ def create_csv(matches):
             writer.writeheader()
             for item in matches:
                 writer.writerow(item.order)
-        except csv.Error:
-            print("Unable to write data inside the CSV file.")
+        except csv.Error as error:
+            print("Unable to write data inside the CSV file.\n{}".format(error))
         finally:
             del writer
 
@@ -133,8 +138,8 @@ def is_not_categories(row):
         for item in row:
             if item in categories:
                 return False
-    except IndexError:
-        print("Unable to parse row inside the csv file.")
+    except IndexError as error:
+        print("Unable to parse row inside the csv file.\n{}".format(error))
     return True
 
 def store_orders(file):
@@ -149,8 +154,8 @@ def store_orders(file):
                 row = clean_row(row)
                 if is_not_categories(row):
                     orders.append(TransactionOrder(row))
-        except csv.Error:
-            print("Unable to get orders stored inside the CSV file.")
+        except csv.Error as error:
+            print("Unable to get orders stored inside the CSV file.\n{}".format(error))
             return None
         finally:
             del reader
@@ -170,7 +175,8 @@ def is_currency_code(currency_codes):
     except FileError as error:
         print(error)
         return False
-    except IndexError:
+    except IndexError as error:
+        print(error)
         return False
     return True
 
@@ -222,7 +228,8 @@ def is_csv(file):
                 row = clean_row(row)
                 if not row or not find_currency_pair(row[2]):
                     return False
-        except csv.Error:
+        except csv.Error as error:
+            print(error)
             return False
         finally:
             del reader
