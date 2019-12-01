@@ -73,7 +73,7 @@ class TransactionOrder:
         '''
         if self.order["action"] in 'BUY' and\
            self.order["price"] >= other.order["price"]:
-           return True
+            return True
         elif other.order["action"] in 'BUY' and\
              other.order["price"] >= self.order["price"]:
             return True
