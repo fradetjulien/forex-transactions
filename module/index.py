@@ -34,8 +34,8 @@ class TransactionOrder:
         '''
         Check if one of the orders has already found a match
         '''
-        if (isinstance(match, bool) or match == 'REJECTED') and\
-           (isinstance(other_match, bool) or other_match == 'REJECTED'):
+        if (match is False or match == 'REJECTED') and\
+           (other_match is False or other_match == 'REJECTED'):
             return False
         return True
 
@@ -80,7 +80,7 @@ class TransactionOrder:
         else:
             return False
 
-    def __eq__(self, other):
+    def execute_order(self, other):
         '''
         If all conditions are respected for the trade, execute it
         '''
@@ -121,7 +121,7 @@ def match_orders(orders):
     while position < len(orders):
         index = -1
         while index < len(orders) - 1:
-            orders[position].__eq__(orders[index + 1])
+            orders[position].execute_order(orders[index + 1])
             index = index + 1
         if isinstance(orders[position].order["match"], bool) and\
            not orders[position].order["match"]:
