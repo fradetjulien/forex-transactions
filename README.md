@@ -22,7 +22,7 @@ If you want to test the script manually, you can achieve this by doing :
 ```bash
 cd module
 pipenv install
-pipenv run python3 index.py
+pipenv run python3 index.py trade <csvFile>
 ```
 
 ## Example
